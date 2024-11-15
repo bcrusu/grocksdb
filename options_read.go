@@ -88,7 +88,7 @@ func (opts *ReadOptions) SetSnapshot(snap *Snapshot) {
 // the extent upto which the forward iterator can returns entries.
 // Once the bound is reached, Valid() will be false.
 // "iterate_upper_bound" is exclusive ie the bound value is
-// not a valid entry.  If iterator_extractor is not null, the Seek target
+// not a valid entry. If prefix_extractor is not null, the Seek target
 // and iterator_upper_bound need to have the same prefix.
 // This is because ordering is not guaranteed outside of prefix domain.
 // There is no lower bound on the iterator. If needed, that can be easily
@@ -217,6 +217,29 @@ func (opts *ReadOptions) SetTotalOrderSeek(value bool) {
 // GetTotalOrderSeek returns if total order seek is enabled.
 func (opts *ReadOptions) GetTotalOrderSeek() bool {
 	return charToBool(C.rocksdb_readoptions_get_total_order_seek(opts.c))
+}
+
+// SetAutoPrefixMode when true, by default use total_order_seek = true, and RocksDB can
+// selectively enable prefix seek mode if won't generate a different result
+// from total_order_seek, based on seek key, and iterator upper bound.
+// BUG: Using Comparator::IsSameLengthImmediateSuccessor and
+// SliceTransform::FullLengthEnabled to enable prefix mode in cases where
+// prefix of upper bound differs from prefix of seek key has a flaw.
+// If present in the DB, "short keys" (shorter than "full length" prefix)
+// can be omitted from auto_prefix_mode iteration when they would be present
+// in total_order_seek iteration, regardless of whether the short keys are
+// "in domain" of the prefix extractor. This is not an issue if no short
+// keys are added to DB or are not expected to be returned by such
+// iterators. (We are also assuming the new condition on
+// IsSameLengthImmediateSuccessor is satisfied; see its BUG section).
+// A bug example is in DBTest2::AutoPrefixMode1, search for "BUG".
+func (opts *ReadOptions) SetAutoPrefixMode(value bool) {
+	C.rocksdb_readoptions_set_auto_prefix_mode(opts.c, boolToChar(value))
+}
+
+// GetAutoPrefixMode returns if auto prefix mode is enabled.
+func (opts *ReadOptions) GetAutoPrefixMode() bool {
+	return charToBool(C.rocksdb_readoptions_get_auto_prefix_mode(opts.c))
 }
 
 // SetMaxSkippableInternalKeys sets a threshold for the number of keys that can be skipped

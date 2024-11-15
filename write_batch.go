@@ -80,6 +80,15 @@ func (wb *WriteBatch) MergeCF(cf *ColumnFamilyHandle, key, value []byte) {
 	C.rocksdb_writebatch_merge_cf(wb.c, cf.c, cKey, C.size_t(len(key)), cValue, C.size_t(len(value)))
 }
 
+// MergeCFWithTS queues a merge of "value" with the existing value of "key" in a
+// column family at the given timestamp.
+func (wb *WriteBatch) MergeCFWithTS(cf *ColumnFamilyHandle, key, ts, value []byte) {
+	cKey := refGoBytes(key)
+	cValue := refGoBytes(value)
+	cTs := refGoBytes(ts)
+	C.rocksdb_writebatch_merge_cf_with_ts(wb.c, cf.c, cKey, C.size_t(len(key)), cTs, C.size_t(len(ts)), cValue, C.size_t(len(value)))
+}
+
 // Delete queues a deletion of the data at key.
 func (wb *WriteBatch) Delete(key []byte) {
 	cKey := refGoBytes(key)

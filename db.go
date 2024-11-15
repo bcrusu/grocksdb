@@ -1016,6 +1016,20 @@ func (db *DB) SingleDeleteCFWithTS(opts *WriteOptions, cf *ColumnFamilyHandle, k
 	return
 }
 
+// DeleteRange deletes keys that are between [startKey, endKey)
+func (db *DB) DeleteRange(opts *WriteOptions, startKey, endKey []byte) (err error) {
+	var (
+		cErr      *C.char
+		cStartKey = refGoBytes(startKey)
+		cEndKey   = refGoBytes(endKey)
+	)
+
+	C.rocksdb_delete_range(db.c, opts.c, cStartKey, C.size_t(len(startKey)), cEndKey, C.size_t(len(endKey)), &cErr)
+	err = fromCError(cErr)
+
+	return
+}
+
 // DeleteRangeCF deletes keys that are between [startKey, endKey)
 func (db *DB) DeleteRangeCF(opts *WriteOptions, cf *ColumnFamilyHandle, startKey, endKey []byte) (err error) {
 	var (

@@ -27,6 +27,11 @@ func NewFixedPrefixTransform(prefixLen int) SliceTransform {
 	return NewNativeSliceTransform(unsafe.Pointer(C.rocksdb_slicetransform_create_fixed_prefix(C.size_t(prefixLen))))
 }
 
+// NewCappedPrefixTransform creates a new capped prefix transform.
+func NewCappedPrefixTransform(capLen int) SliceTransform {
+	return NewNativeSliceTransform(unsafe.Pointer(C.rocksdb_slicetransform_create_capped_prefix(C.size_t(capLen))))
+}
+
 // NewNoopPrefixTransform creates a new no-op prefix transform.
 func NewNoopPrefixTransform() SliceTransform {
 	return NewNativeSliceTransform(unsafe.Pointer(C.rocksdb_slicetransform_create_noop()))
